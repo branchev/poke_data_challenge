@@ -19,6 +19,16 @@ async def fetch_pokemon_details(session, url):
     Returns:
         dict: A dicionary containing the details of the pokemon, including its ID, name, height, and weight.
               Returns None if an error occures upon fetching the details
+
+    NOTE:
+    regarding the documentation of PokeAPI endpoint: GET https://pokeapi.co/api/v2/pokemon/{id or name}/
+        integer
+        height
+            The height of this Pokémon in decimetres.
+
+        integer
+        weight	
+            The weight of this Pokémon in hectograms.
     """
 
     async with session.get(url) as response:
@@ -70,10 +80,10 @@ try:
 
     for idx, pokemon_details in enumerate(pokemon_details_list, start=1):
         if pokemon_details:
-            print(f"{idx}: {pokemon_details['name']} - "
+            print(f"{idx}: {pokemon_details['name'].capitalize()} - "
                     f"ID: {pokemon_details['id']}, "
-                    f"Height: {pokemon_details['height']}, "
-                    f"Weight: {pokemon_details['weight']}"
+                    f"Height: {pokemon_details['height']} dm., "
+                    f"Weight: {pokemon_details['weight']} hg. ."
                 )
 
     with open('pokemon_details.json', 'w') as file:
