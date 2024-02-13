@@ -3,22 +3,21 @@ import asyncio
 import json
 import aiohttp
 
-
 # Error message for failed API requests
-error_message ='Failed to retrieve pokemon details from API'
+error_message = 'Failed to retrieve pokemon details from API'
 
 
 async def fetch_pokemon_details(session, url):
     """
-    Fetches details of a Pokemo from the given URL asynchronously.
+    Fetches details of a Pokemon from the given URL asynchronously.
 
     Args:
         session (aiohttp.ClientSession): An aiohttp ClientSession obj for making HTTP requests.
         url (str): The URL of the Pokemon details API endpoint
 
     Returns:
-        dict: A dicionary containing the details of the pokemon, including its ID, name, height, and weight.
-              Returns None if an error occures upon fetching the details
+        dict: A dictionary containing the details of the pokemon, including its ID, name, height, and weight.
+              Returns None if an error occurs upon fetching the details
 
     NOTE:
     regarding the documentation of PokeAPI endpoint: GET https://pokeapi.co/api/v2/pokemon/{id or name}/
@@ -27,7 +26,7 @@ async def fetch_pokemon_details(session, url):
             The height of this Pokémon in decimetres.
 
         integer
-        weight	
+        weight
             The weight of this Pokémon in hectograms.
     """
 
@@ -70,7 +69,7 @@ try:
     response.raise_for_status()
 
     data = response.json()
-    # The line below is commented because of pagination with 'limit' does not works to this endpoint!!!!
+    # The line below is commented because pagination with 'limit' does not work for this endpoint!!!!
     # pokemon_results = data['pokemon']
     pokemon_results = data['pokemon'][:LIMIT_COUNT]
     pokemon_urls = [pokemon['pokemon']['url'] for pokemon in pokemon_results]
@@ -78,16 +77,25 @@ try:
     loop = asyncio.get_event_loop()
     pokemon_details_list = loop.run_until_complete(fetch_pokemon_details_batch(pokemon_urls))
 
+    pokemon_details_dict = {}
+    for pokemon_details in pokemon_details_list:
+        if pokemon_details:
+            pokemon_id = pokemon_details['id']
+            pokemon_details_dict[pokemon_id] = {
+                'name': pokemon_details['name'].capitalize(),
+                'height': pokemon_details['height'],
+                'weight': pokemon_details['weight']
+            }
+
+    with open('pokemon_details.json', 'w') as file:
+        json.dump(pokemon_details_dict, file, indent=4)
+
     for idx, pokemon_details in enumerate(pokemon_details_list, start=1):
         if pokemon_details:
             print(f"{idx}: {pokemon_details['name'].capitalize()} - "
-                    f"ID: {pokemon_details['id']}, "
-                    f"Height: {pokemon_details['height']} dm., "
-                    f"Weight: {pokemon_details['weight']} hg. ."
-                )
-
-    with open('pokemon_details.json', 'w') as file:
-        json.dump([details for details in pokemon_details_list if details], file, indent=4)
+                  f"ID: {pokemon_details['id']}, "
+                  f"Height: {pokemon_details['height']} dm., "
+                  f"Weight: {pokemon_details['weight']} hg. .")
 
 except Exception as e:
     print(f'{error_message}: {e}')
