@@ -2,36 +2,9 @@ import json
 import apache_beam as beam
 
 
-class PrintFirstN(beam.DoFn):
-    """A DoFn for printing the first N elements."""
-
-    def __init__(self, n):
-        """
-        Initializes the PrintFirstN class.
-        Args:
-            n (int): The number of elements to print.
-        """
-        self.n = n
-        self.count = 0
-
-    def process(self, element):
-        """
-        Processes each element and prints it if count is less than N.
-        Args:
-            element: The element to process.
-
-        Yields:
-            The input element if count is less than N.
-        """
-        if self.count < self.n:
-            self.count += 1
-            print(element)
-            yield element
-
-
 def normalize_pokemon(pokemon):
     """
-    Converts the given Pokemon heght and weight:
+    Converts the given Pokemon height and weight:
         - dm -> m
         - hg -> kg
     Args:
@@ -40,10 +13,8 @@ def normalize_pokemon(pokemon):
     Returns:
         dict: The normalized Pokemon data.
     """
-
-    pokemon['height'] = pokemon['height'] / 10.0    
-    pokemon['weight'] = pokemon['weight'] / 10.0
-    
+    pokemon['height'] = round(pokemon['height'] / 10.0, 2)
+    pokemon['weight'] = round(pokemon['weight'] / 10.0, 2)
     return pokemon
 
 
@@ -56,12 +27,36 @@ def calculate_bmi(pokemon):
     Returns:
         dict: The Pokemon data with BMI added.
     """
-
-    bmi = pokemon['weight'] / (pokemon['height'] ** 2)    
+    bmi = pokemon['weight'] / (pokemon['height'] ** 2)
     bmi = round(bmi, 2)
     pokemon['bmi'] = bmi
-    
+
     return pokemon
+
+
+def update_json_file(pokemon_data):
+    """
+    Updates the JSON file with the modified Pokemon data.
+    Args:
+        pokemon_data (dict): A dictionary containing the modified Pokemon data.
+    """
+    pokemon_id, updated_data = pokemon_data
+
+    try:
+        with open('pokemon_details.json', 'r') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        data = {}
+
+    data[pokemon_id] = updated_data
+
+    try:
+        with open('pokemon_details.json', 'w') as file:
+            json.dump(data, file, indent=4)
+        return data
+    except Exception as e:
+        print(f"An error occurred while updating the JSON file: {e}")
+        return None
 
 
 def run_pipeline():
@@ -89,17 +84,34 @@ def run_pipeline():
 
     with open('pokemon_details.json', 'r') as file:
         pokemon_data = json.load(file)
-    
-    normalized_data = [normalize_pokemon(p) for p in pokemon_data]
-    
+        # Checking if 'bmi' key exists - the data is already transformed once
+        if 'bmi' in pokemon_data[next(iter(pokemon_data))]:
+            raise ValueError("BMI already calculated and data is updated. Pipeline cannot proceed.")
+
     with beam.Pipeline() as pipeline:
         transformed_data = (
             pipeline
-            | 'Create PCollection' >> beam.Create(normalized_data)
-            | 'Calculate BMI' >> beam.Map(calculate_bmi)
-            | 'Print First 50 Rows' >> beam.ParDo(PrintFirstN(50))
+            | 'Read JSON File' >> beam.Create(pokemon_data.items()) 
+            | 'Normalize Pokemon Data' >> beam.Map(lambda kv: (kv[0], normalize_pokemon(kv[1])))
+            | 'Calculate BMI' >> beam.Map(lambda kv: (kv[0], calculate_bmi(kv[1])))
+            | 'Update JSON' >> beam.Map(update_json_file)
         )
+
+def print_pokemon_details():
+    """
+    Prints the Pokemon details
+    """
+    with open('pokemon_details.json', 'r') as file:
+        pokemon_data = json.load(file)
+    
+    for index, (pokemon_id, details) in enumerate(pokemon_data.items(), start=1):
+        print(f"{index}: {details['name'].capitalize()} - "
+              f"ID: {pokemon_id}, "
+              f"Height: {details['height']:.2f} m., "
+              f"Weight: {details['weight']:.2f} kg., "
+              f"BMI: {details['bmi']:.2f}")
 
 
 if __name__ == '__main__':
     run_pipeline()
+    print_pokemon_details()
