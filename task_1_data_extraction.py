@@ -30,8 +30,8 @@ async def fetch_pokemon_details(session, url):
             The weight of this Pokémon in hectograms.
     """
 
-    async with session.get(url) as response:
-        try:
+    try:
+        async with session.get(url) as response:
             response.raise_for_status()
             data = await response.json()
             return {
@@ -40,9 +40,9 @@ async def fetch_pokemon_details(session, url):
                 'height': data['height'],
                 'weight': data['weight']
             }
-        except Exception as e:
-            print(f'{error_message}: {e}')
-            return None
+    except aiohttp.ClientError as e:
+        print(f'{error_message}: {e}')
+        return None
 
 
 async def fetch_pokemon_details_batch(pokemon_urls):
@@ -97,5 +97,7 @@ try:
                   f"Height: {pokemon_details['height']} dm., "
                   f"Weight: {pokemon_details['weight']} hg. .")
 
-except Exception as e:
+except (requests.RequestException, aiohttp.ClientError) as e:
     print(f'{error_message}: {e}')
+except Exception as e:
+    print(f'An unexpected error occurred: {e}')
