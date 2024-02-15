@@ -1,5 +1,6 @@
 import sqlite3
 import json
+import os
 
 
 def create_pokemon_table_if_not_exists(connection):
@@ -30,9 +31,9 @@ def load_pokemon_data_into_db(connection, data):
     
     Args:
     - connection: SQLite database connection object
-    - data: Dictionary containing Pokemon data withh keys as Pokemon IDs.
+    - data: Dictionary containing Pokemon data with keys as Pokemon IDs.
     Returns:
-    NOne
+    None
     """
     cursor = connection.cursor()
     for pokemon_id, details in data.items():
@@ -55,14 +56,26 @@ def main():
     """
     Main function to load Pokemon data into the db
     """
+
+    json_file_path = 'pokemon_details.json'
+    if not os.path.exists(json_file_path):
+        print(f"Error: JSON file '{json_file_path}' not found.")
+        return
     connection = sqlite3.connect('pokemon.db')
-    create_pokemon_table_if_not_exists(connection)
 
-    with open('pokemon_details.json', 'r') as file:
-        pokemon_data = json.load(file)
-        load_pokemon_data_into_db(connection, pokemon_data)
+    try:
+        create_pokemon_table_if_not_exists(connection)
 
-    connection.close()
+        with open(json_file_path, 'r') as file:
+            pokemon_data = json.load(file)
+            load_pokemon_data_into_db(connection, pokemon_data)
+
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+
+    finally:
+        connection.close()
+
 
 if __name__ == '__main__':
     main()
