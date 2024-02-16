@@ -5,6 +5,11 @@ __pycache__
 # Ignore database files
 *.db
 
+# Ignore created json files
+*.json
+# Ignore created csv files
+*.csv
+
 # Ignore JSON beam-temp files
 beam-temp-*
 
