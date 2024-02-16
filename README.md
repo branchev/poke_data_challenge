@@ -79,6 +79,7 @@ A data transformation pipeline using Apache Beam to perform the following tasks 
 - Create a new column called bmi (Body Mass Index) using the formula: bmi = weight / (height^2). Round the result to two decimal places.
 - Print the first 50 rows of the transformed dataset.
 
+
     $ python task_2_data_transformation.py
 
 ### Task 3: Data Loading
@@ -95,5 +96,6 @@ It shows some metrics compiled using the information available in the database:
 - Find Pokemon with highest BMI
 - Analize height-weight ratio
 - Classify weight category
+
 
     $ python task_3_fill_db.py
