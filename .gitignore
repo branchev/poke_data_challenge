@@ -1,0 +1,12 @@
+# Ignore Python bytecode files
+*.pyc
+__pycache__
+
+# Ignore database files
+*.db
+
+# Ignore JSON beam-temp files
+beam-temp-*
+
+# Ignore virtual environment directory
+venv/
