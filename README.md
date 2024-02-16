@@ -80,7 +80,7 @@ A data transformation pipeline using Apache Beam to perform the following tasks 
 - Print the first 50 rows of the transformed dataset.
 
 
-    \$ python task_2_data_transformation.py
+    `$ python task_2_data_transformation.py`
 
 
 ### Task 3: Data Loading
@@ -99,5 +99,5 @@ It shows some metrics compiled using the information available in the database:
 - Classify weight category
 
 
-    \$ python task_4_advanced_data_processing.py 
+    `$ python task_4_advanced_data_processing.py` 
 
