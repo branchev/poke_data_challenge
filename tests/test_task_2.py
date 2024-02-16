@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch, mock_open
-import apache_beam as beam
 from task_2_data_transformation import (
     normalize_pokemon,
     calculate_bmi,
@@ -10,8 +9,13 @@ from task_2_data_transformation import (
 
 
 class TestPokemonFunctions(unittest.TestCase):
-
+    """
+    A test suite for Pokemon data transformation functions.
+    """
     def setUp(self):
+        """
+        Set up test data for each test case.
+        """
         self.pokemon_data = {
             'id': 1,
             'name': 'pokemon',
@@ -26,10 +30,16 @@ class TestPokemonFunctions(unittest.TestCase):
         }
 
     def test_normalize_pokemon(self):
+        """
+        Test the normalize_pokemon function.
+        """
         normalized = normalize_pokemon(self.pokemon_data)
         self.assertEqual(normalized, self.normalized_pokemon)
 
     def test_calculate_bmi(self):
+        """
+        Test the calculate_bmi function.
+        """
         bmi_calculated = calculate_bmi(self.normalized_pokemon)
         expected_bmi = round(69.9 / (7.0 ** 2), 2)
         self.assertEqual(bmi_calculated['bmi'], expected_bmi)
@@ -38,6 +48,9 @@ class TestPokemonFunctions(unittest.TestCase):
     @patch('json.load')
     @patch('json.dump')
     def test_update_json_file(self, mock_json_dump, mock_json_load, mock_open):
+        """
+        Test the update_json_file function.
+        """
         mock_json_load.return_value = {}
         update_json_file(('1', self.normalized_pokemon))
         mock_open.assert_called_once_with('pokemon_details.json', 'r+')
@@ -47,6 +60,9 @@ class TestPokemonFunctions(unittest.TestCase):
     @patch('task_2_data_transformation.beam.Pipeline.__enter__')
     @patch('task_2_data_transformation.beam.Pipeline.__exit__')
     def test_run_pipeline(self, mock_pipeline_exit, mock_pipeline_enter, mock_pipeline_run):
+        """
+        Test the run_pipeline function.
+        """
         mock_pipeline_run.return_value = None
         run_pipeline()
         mock_pipeline_enter.assert_called_once()
